@@ -16,8 +16,18 @@ const reactionSchema = new Schema({
       isEmail: true,
     },
   },
-  thoughts: [thoughtSchema],
-  friends: [userSchema],
+  thoughts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Thought",
+    },
+  ],
+  friends: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
 });
 
 const User = model("user", userSchema);
