@@ -1,4 +1,4 @@
-const { Thought, Reaction, User } = require("../models");
+const { Thought, User } = require("../models");
 const reactionSchema = require("../models/reaction");
 
 module.exports = {
@@ -29,7 +29,7 @@ module.exports = {
       });
   },
   // PUT to update a thought by its _id
-  udpateThought(req, res) {
+  updateThought(req, res) {
     Thought.findOneAndUpdate(
       { _id: req.params.thoughtId },
       { $set: req.body },
@@ -51,6 +51,33 @@ module.exports = {
           : reactionSchema.deleteMany({ _id: { $in: reaction.thoughts } })
       )
       .then(() => res.json({ message: "Thought and reaction deleted!" }))
+      .catch((err) => res.status(500).json(err));
+  },
+
+  createReaction(req, res) {
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $push: { reactions: req.body } }
+    )
+      .then((reaction) => res.json(reaction))
+      .catch((err) => {
+        console.log(err);
+        return res.status(500).json(err);
+      });
+  },
+  // DELETE to pull and remove a reaction by the reaction's reactionId value
+  deleteReaction(req, res) {
+    Reaction.findOneAndDelete({ _id: req.params.reactionId })
+      .then((reaction) =>
+        !reaction
+          ? res.status(404).json({ message: "No reaction with that ID" })
+          : Thought.findOneAndUpdate(
+              { reaction: req.params.reactionId },
+              { $pull: { reaction: req.params.reactionId } },
+              { new: true }
+            )
+      )
+      .then(() => res.json({ message: "Reaction deleted!" }))
       .catch((err) => res.status(500).json(err));
   },
 };
